@@ -46,9 +46,7 @@ a {
 /* For Carousel Component */
 .carousel-item {
   position: relative;
-  transition: all 0.4s ease-in-out;
 }
-
 
 .carousel-item.left, .carousel-item.right {
   display: block;

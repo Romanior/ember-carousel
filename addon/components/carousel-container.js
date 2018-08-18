@@ -9,8 +9,9 @@ export default Component.extend({
   classNames: ['carousel-container'],
 
   layout,
-  transitionInterval: 500,
+  transitionInterval: 400,
   totalCarouselItems: reads('carouselItems.length'),
+  isAnimatedJump: true,
 
   init() {
     this._super(...arguments);
@@ -21,12 +22,10 @@ export default Component.extend({
     return get(this, 'carouselItems').findBy('isActive');
   }),
 
-  slide(newActiveIndex, direction) {
+  slide(newActiveIndex, direction, transitionInterval, transitionOffset = 400, fnDone) {
     let carouselItems = get(this, 'carouselItems');
     let activeCarouselItem = get(this, 'activeCarouselItem');
     let newActiveCarouselItem = carouselItems[newActiveIndex];
-    let transitionInterval = get(this, 'transitionInterval');
-    let transitionOffset = 50;
 
     run(function() {
       set(activeCarouselItem, 'from', direction);
@@ -50,48 +49,90 @@ export default Component.extend({
         from: null,
         isActive: true
       });
+
+      fnDone && fnDone();
     }, (transitionInterval + transitionOffset));
   },
 
+  jumpToItem(item, activeItem) {
+    activeItem.set('isActive', false);
+    item.set('isActive', true);
+  },
+
+  slideRight(transitionInterval = get(this, 'transitionInterval'), fnDone = () => {}) {
+    let direction = 'right';
+    let activeIndex = get(this, 'activeCarouselItem.index');
+    let newActiveIndex = activeIndex - 1;
+
+    if (activeIndex === 0) {
+      newActiveIndex = get(this, 'totalCarouselItems') - 1;
+    }
+
+    if (get(this, 'onSlide')) {
+      get(this, 'onSlide')({
+        index: newActiveIndex,
+        previousIndex: activeIndex,
+        direction
+      });
+    }
+
+    this.slide(newActiveIndex, direction, transitionInterval, fnDone);
+  },
+
+  slideLeft(transitionInterval = get(this, 'transitionInterval'), fnDone = () => {}) {
+    let direction = 'left';
+    let activeIndex = get(this, 'activeCarouselItem.index');
+    let newActiveIndex = activeIndex + 1;
+
+    if (activeIndex === (get(this, 'totalCarouselItems') - 1)) {
+      newActiveIndex = 0;
+    }
+
+    if (get(this, 'onSlide')) {
+      get(this, 'onSlide')({
+        index: newActiveIndex,
+        previousIndex: activeIndex,
+        direction
+      });
+    }
+
+    this.slide(newActiveIndex, direction, transitionInterval, fnDone);
+  },
+
   actions: {
-    slideRight() {
-      let direction = 'right';
-      let activeIndex = get(this, 'activeCarouselItem.index');
-      let newActiveIndex = activeIndex - 1;
+    slideTo(item) {
+      let { carouselItems, activeCarouselItem, isAnimatedJump, transitionInterval } =
+        this.getProperties('carouselItems', 'activeCarouselItem', 'isAnimatedJump', 'transitionInterval');
 
-      if (activeIndex === 0) {
-        newActiveIndex = get(this, 'totalCarouselItems') - 1;
+      if (!isAnimatedJump) {
+        return this.jumpToItem(item, activeCarouselItem);
       }
 
-      if (get(this, 'onSlide')) {
-        get(this, 'onSlide')({
-          index: newActiveIndex,
-          previousIndex: activeIndex,
-          direction
-        });
-      }
+      let currentActiveIndex = carouselItems.indexOf(activeCarouselItem);
+      let targetIndex = carouselItems.indexOf(item);
 
-      this.slide(newActiveIndex, direction);
+      if (currentActiveIndex !== targetIndex) {
+        let willSlidingRight = targetIndex > currentActiveIndex;
+        let stepsToTarget = Math.abs(targetIndex - currentActiveIndex);
+        let interval = Math.round(transitionInterval / stepsToTarget);
+        let currentIndex = currentActiveIndex;
+
+
+        for (let x = 0, ln = stepsToTarget; x < ln; x++) {
+
+          this.slideLeft(20)
+
+        }
+
+      }
     },
 
-    slideLeft() {
-      let direction = 'left';
-      let activeIndex = get(this, 'activeCarouselItem.index');
-      let newActiveIndex = activeIndex + 1;
+    toRight() {
+      return this.slideLeft();
+    },
 
-      if (activeIndex === (get(this, 'totalCarouselItems') - 1)) {
-        newActiveIndex = 0;
-      }
-
-      if (get(this, 'onSlide')) {
-        get(this, 'onSlide')({
-          index: newActiveIndex,
-          previousIndex: activeIndex,
-          direction
-        });
-      }
-
-      this.slide(newActiveIndex, direction);
+    toLeft() {
+      return this.slideRight();
     },
 
     registerItem(item) {

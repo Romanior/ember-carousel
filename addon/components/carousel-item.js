@@ -15,6 +15,12 @@ export default Component.extend({
     let allItems = this.get('allItems');
 
     set(this, 'index', allItems.indexOf(this));
+
+    let transitionIntervalSec  = `${this.get('transitionInterval')/1000}s`;
+
+    this.$().css({
+      transition: `all ${transitionIntervalSec} ease-out`,
+    })
   },
 
   isActive: computed('allItems.@each', function() {

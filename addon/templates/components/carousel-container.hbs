@@ -2,10 +2,15 @@
   (hash
     item=(component 'carousel-item'
       register=(action 'registerItem')
+      transitionInterval=transitionInterval
       allItems=carouselItems)
   )
   (hash
-    previous=(action 'slideLeft')
-    next=(action 'slideRight')
+    previous=(action 'toLeft')
+    next=(action 'toRight')
+    to=(action 'slideTo')
+  )
+  (hash
+    allItems=carouselItems
   )
 }}

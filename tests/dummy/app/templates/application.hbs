@@ -1,21 +1,30 @@
 <div class="demo-carousel">
   <h2 class="text-center"> Ember Carousel Addon </h2>
 
-  {{#carousel-container transitionInterval=400 as |ui act|}}
+  {{#carousel-container transitionInterval=300 as |ui act carousel|}}
     <div class="carousel-body">
       {{#ui.item}}
         <img class="img-responsive" src="https://unsplash.imgix.net/photo-1428452932365-4e7e1c4b0987?dpr=2&fit=crop&fm=jpg&h=700&q=75&w=1050" />
       {{/ui.item}}
       {{#ui.item}}
-        <img class="img-responsive" src="https://ununsplash.imgix.net/photo-1429547584745-d8bec594c82e?q=75&fm=jpg&w=1080&fit=max&s=1870a82969024ba6816b271a49ca5876" />
+        <img class="img-responsive" src="https://unsplash.imgix.net/photo-1429547584745-d8bec594c82e?q=75&fm=jpg&w=1080&fit=max&s=1870a82969024ba6816b271a49ca5876" />
       {{/ui.item}}
       {{#ui.item}}
         <img class="img-responsive" src="https://ununsplash.imgix.net/photo-1433785124354-92116416b870?dpr=2&fit=crop&fm=jpg&h=700&q=75&w=1050" />
       {{/ui.item}}
+      {{#ui.item}}
+        <img class="img-responsive" src="https://images.unsplash.com/photo-1501443762994-82bd5dace89a?ixlib=rb-0.3.5&s=0e0238ba247e437bad05f31a562bbb44&auto=format&fit=crop&w=2850&q=80" />
+      {{/ui.item}}
+
     </div>
 
     <div class="line-arrow left" onclick={{act.previous}}></div>
     <div class="line-arrow right" onclick={{act.next}}></div>
+
+    {{#each carousel.allItems as |dot|}}
+      <div {{action act.to dot}}>{{dot.isActive}}</div>
+    {{/each}}
+
   {{/carousel-container}}
 
   <div class="image-credits">
