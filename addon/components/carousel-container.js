@@ -22,22 +22,44 @@ export default Component.extend({
     return get(this, 'carouselItems').findBy('isActive');
   }),
 
-  slide(newActiveIndex, direction, transitionInterval, transitionOffset = 400, fnDone) {
+  activeIndex: reads('activeCarouselItem.index'),
+
+  didUpdateAttrs() {
+    this.whenActiveIndexChanged();
+  },
+
+  didInsertElement() {
+    this.whenActiveIndexChanged();
+  },
+
+  whenActiveIndexChanged() {
+    let activeIndex = this.get('activeIndex');
+    let items = this.get('carouselItems');
+
+    if (activeIndex && items.length && (activeIndex < items.length)) {
+      let item = items.objectAt(activeIndex);
+      this.jumpToItem(item, this.get('activeCarouselItem'));
+    }
+  },
+
+  slide(newActiveIndex, direction, transitionInterval, transitionOffset = get(this, 'transitionInterval') / 2) {
     let carouselItems = get(this, 'carouselItems');
     let activeCarouselItem = get(this, 'activeCarouselItem');
     let newActiveCarouselItem = carouselItems[newActiveIndex];
 
-    run(function() {
+    run(() => {
       set(activeCarouselItem, 'from', direction);
       set(newActiveCarouselItem, 'from', direction);
     });
 
-    later(function() {
+    later(() => {
       set(activeCarouselItem, 'slidingOut', true);
       set(newActiveCarouselItem, 'slidingIn', true);
     }, transitionOffset);
 
-    later(function() {
+    later(() => {
+      this.set('activeIndex', newActiveIndex);
+
       activeCarouselItem.setProperties({
         slidingOut: false,
         from: null,
@@ -50,7 +72,6 @@ export default Component.extend({
         isActive: true
       });
 
-      fnDone && fnDone();
     }, (transitionInterval + transitionOffset));
   },
 
@@ -59,9 +80,9 @@ export default Component.extend({
     item.set('isActive', true);
   },
 
-  slideRight(transitionInterval = get(this, 'transitionInterval'), fnDone = () => {}) {
+  slideRight(transitionInterval = get(this, 'transitionInterval')) {
     let direction = 'right';
-    let activeIndex = get(this, 'activeCarouselItem.index');
+    let activeIndex = get(this, 'activeIndex');
     let newActiveIndex = activeIndex - 1;
 
     if (activeIndex === 0) {
@@ -76,12 +97,12 @@ export default Component.extend({
       });
     }
 
-    this.slide(newActiveIndex, direction, transitionInterval, fnDone);
+    this.slide(newActiveIndex, direction, transitionInterval);
   },
 
-  slideLeft(transitionInterval = get(this, 'transitionInterval'), fnDone = () => {}) {
+  slideLeft(transitionInterval = get(this, 'transitionInterval')) {
     let direction = 'left';
-    let activeIndex = get(this, 'activeCarouselItem.index');
+    let activeIndex = get(this, 'activeIndex');
     let newActiveIndex = activeIndex + 1;
 
     if (activeIndex === (get(this, 'totalCarouselItems') - 1)) {
@@ -96,35 +117,13 @@ export default Component.extend({
       });
     }
 
-    this.slide(newActiveIndex, direction, transitionInterval, fnDone);
+    this.slide(newActiveIndex, direction, transitionInterval);
   },
 
   actions: {
-    slideTo(item) {
-      let { carouselItems, activeCarouselItem, isAnimatedJump, transitionInterval } =
-        this.getProperties('carouselItems', 'activeCarouselItem', 'isAnimatedJump', 'transitionInterval');
-
-      if (!isAnimatedJump) {
-        return this.jumpToItem(item, activeCarouselItem);
-      }
-
-      let currentActiveIndex = carouselItems.indexOf(activeCarouselItem);
-      let targetIndex = carouselItems.indexOf(item);
-
-      if (currentActiveIndex !== targetIndex) {
-        let willSlidingRight = targetIndex > currentActiveIndex;
-        let stepsToTarget = Math.abs(targetIndex - currentActiveIndex);
-        let interval = Math.round(transitionInterval / stepsToTarget);
-        let currentIndex = currentActiveIndex;
-
-
-        for (let x = 0, ln = stepsToTarget; x < ln; x++) {
-
-          this.slideLeft(20)
-
-        }
-
-      }
+    jumpTo(item) {
+      let activeCarouselItem = this.get('activeCarouselItem');
+      this.jumpToItem(item, activeCarouselItem);
     },
 
     toRight() {
