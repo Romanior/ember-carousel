@@ -11,7 +11,7 @@ export default Component.extend({
   layout,
   transitionInterval: 400,
   totalCarouselItems: reads('carouselItems.length'),
-  isAnimatedJump: true,
+  jumpIndex: 0,
 
   init() {
     this._super(...arguments);
@@ -24,20 +24,16 @@ export default Component.extend({
 
   activeIndex: reads('activeCarouselItem.index'),
 
-  didUpdateAttrs() {
-    this.whenActiveIndexChanged();
-  },
-
   didInsertElement() {
-    this.whenActiveIndexChanged();
+    this.jumpIndexChanged();
   },
 
-  whenActiveIndexChanged() {
-    let activeIndex = this.get('activeIndex');
+  jumpIndexChanged() {
+    let jumpIndex = this.get('jumpIndex');
     let items = this.get('carouselItems');
 
-    if (activeIndex && items.length && (activeIndex < items.length)) {
-      let item = items.objectAt(activeIndex);
+    if (jumpIndex && items.length && (jumpIndex < items.length)) {
+      let item = items.objectAt(jumpIndex);
       this.jumpToItem(item, this.get('activeCarouselItem'));
     }
   },
@@ -78,6 +74,7 @@ export default Component.extend({
   jumpToItem(item, activeItem) {
     activeItem.set('isActive', false);
     item.set('isActive', true);
+    this.set('activeIndex', this.get('carouselItems').indexOf(item));
   },
 
   slideRight(transitionInterval = get(this, 'transitionInterval')) {
@@ -135,7 +132,29 @@ export default Component.extend({
     },
 
     registerItem(item) {
+      let jumpIndex = this.get('jumpIndex');
+      let activeItem = this.get('activeCarouselItem')
+
+      let items = this.get('carouselItems');
+
       this.get('carouselItems').pushObject(item);
+
+      if (jumpIndex && items.length && (jumpIndex < items.length)) {
+        this.jumpToItem(item, activeItem)
+      }
+    },
+
+    unregisterItem(item) {
+      let items = this.get('carouselItems');
+      let activeCarouselItem = this.get('activeCarouselItem');
+      let activeIndex = items.indexOf(activeCarouselItem);
+
+      // make active element from left or right of removed
+      let activeSibling = items.objectAt(activeIndex - 1) || items.objectAt(activeIndex + 1);
+      activeSibling && this.jumpToItem(activeSibling, activeCarouselItem)
+
+      this.set('activeIndex', items.indexOf(activeSibling));
+      this.get('carouselItems').removeObject(item);
     }
   }
 });

@@ -23,6 +23,10 @@ export default Component.extend({
     })
   },
 
+  willDestroyElement() {
+    get(this, 'unregister')(this);
+  },
+
   isActive: computed('allItems.@each', function() {
     return this === get(this, 'allItems.firstObject');
   })
