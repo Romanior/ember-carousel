@@ -151,7 +151,7 @@ export default Component.extend({
 
       // make active element from left or right of removed
       let activeSibling = items.objectAt(activeIndex - 1) || items.objectAt(activeIndex + 1);
-      activeSibling && this.jumpToItem(activeSibling, activeCarouselItem)
+      activeSibling && activeCarouselItem && this.jumpToItem(activeSibling, activeCarouselItem)
 
       this.set('activeIndex', items.indexOf(activeSibling));
       this.get('carouselItems').removeObject(item);
